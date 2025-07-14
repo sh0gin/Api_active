@@ -53,7 +53,7 @@ class User extends \yii\db\ActiveRecord implements IdentityInterface
 
             [['name'], 'match', 'pattern' => '/^([A-Z]|[А-Я]).+/', 'on' => 'reg'],
             [['name', 'email'], 'string', 'on' => 'reg'],
-            [['email'], 'email', 'on' => 'reg'],
+            [['email'], 'email'],
             ['email', 'unique', 'on' => 'reg'],
             ['password', 'match', 'pattern' =>'/(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])[0-9a-zA-Z!@#$%^&*]{4}/', 'on' => 'reg'],
             

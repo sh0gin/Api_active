@@ -69,9 +69,6 @@ class UserController extends \yii\rest\ActiveController
 
     public function actionRegister()
     {
-
-
-
         // print_r(Yii::$app->request->post());
         $model = new User();
         $model->scenario = 'reg';
@@ -104,7 +101,54 @@ class UserController extends \yii\rest\ActiveController
         } else {
             Yii::$app->response->statusCode = 422;
             $valid = $model->getErrors();
-            
+
+            return $this->asJson([
+                'errors' => [
+                    'code' => 422,
+                    'message' => "Validation error",
+                    'errors' => [
+                        $valid,
+                    ]
+                ],
+            ]);
+        }
+    }
+
+    public function actionLogin()
+    {
+        $model = new User();
+        $model->scenario = 'auth';
+        $model->load(Yii::$app->request->post(), "");
+
+        if ($model->validate()) {
+            $user = User::findOne(['email' => $model->email]);
+            if ($user && $user->validatePassword($model->password)) {
+                $user->token = Yii::$app->security->generateRandomString();
+                $user->role_id = Role::getRoleId('user');
+                $user->save(false);
+                return $this->asJson([
+                    'data' => [
+                        'token' => $user->token,
+                        'user' => [
+                            'id' => $user->id,
+                            'name' => $user->name,
+                            'email' => $user->email,
+                            'role' => $user->role_id,
+                        ]
+                    ],
+                    'code' => 200,
+                    'message' => "Успешная авторизация",
+                ]);
+            } else {
+                Yii::$app->response->statusCode = 403;
+                return $this->asJson([
+                    'massage' => 'Login failed',
+                ]);
+            }
+        } else {
+            Yii::$app->response->statusCode = 422;
+            $valid = $model->getErrors();
+
             return $this->asJson([
                 'errors' => [
                     'code' => 422,

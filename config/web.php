@@ -81,6 +81,8 @@ $config = [
                 ['class' => 'yii\rest\UrlRule', 'controller' => 'user'],
                 "POST api/registration" => 'user/register',
                 "OPTION api/registration" => 'user/option',
+                "POST api/login" => 'user/login',
+                "OPTION api/login" => 'user/option'
             ],
         ]
     ],
