@@ -82,7 +82,11 @@ $config = [
                 "POST api/registration" => 'user/register',
                 "OPTION api/registration" => 'user/option',
                 "POST api/login" => 'user/login',
-                "OPTION api/login" => 'user/option'
+                "OPTION api/login" => 'user/option',
+                "POST api/books/upload" => 'book/uploadsbook',
+                "OPTION api/books/upload" => 'book/option',
+                "GET api/books" => 'book/get-books',
+                "OPTION api/books" => 'book/option',
             ],
         ]
     ],

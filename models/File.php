@@ -9,6 +9,7 @@ use Yii;
  *
  * @property int $id
  * @property string $file_url
+ * @property string $user_id
  * @property string $data_uploads
  *
  * @property Book[] $books
@@ -31,8 +32,8 @@ class File extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['file_url', 'data_uploads'], 'required'],
-            [['data_uploads'], 'safe'],
+            [['file_url', 'user_id'], 'required'],
+            [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => Book::class, 'targetAttribute' => ['book_id' => 'id']],
             [['file_url'], 'string', 'max' => 255],
         ];
     }
