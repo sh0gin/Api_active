@@ -7,6 +7,7 @@ use app\models\File;
 use app\models\User;
 use yii\db\Query;
 use Yii;
+use yii\data\ActiveDataProvider;
 use yii\filters\auth\HttpBearerAuth;
 use yii\web\UploadedFile;
 
@@ -71,9 +72,10 @@ class BookController extends \yii\rest\ActiveController
     public function actionUploadsbook()
     {
         $model = new Book();
+        $model->scenario = 'book';
         $model->load(Yii::$app->request->post(), "");
         $model->file_id = UploadedFile::getInstancesByName('file_id');
-
+        
         if ($model->validate()) {
             if (Yii::$app->user->id) {
                 $model_book = new File();
@@ -132,10 +134,11 @@ class BookController extends \yii\rest\ActiveController
             ->from('file')
             ->leftJoin('user', 'file.user_id = user.id')
             ->rightJoin('book', 'file.id = book.file_id')
-            // ->where(['role_id' => 2])
+            ->where(['role_id' => 2])
             ->createCommand()
             ->queryAll();
         $result = [];
+        Yii::$app->response->statusCode = 200;
         foreach ($query as $model) {
             $result[] = [
                 'id' => $model['id'],
@@ -149,8 +152,63 @@ class BookController extends \yii\rest\ActiveController
             'data' => [
                 'books' => [
                     $result,
-                ]
+                ],
+                'code' => 200,
+                'message' => "Список книг получен",
             ],
         ]);
+    }
+
+    public function actionGetBooksPagination()
+    {
+        $get = Yii::$app->request->get();
+        
+        $model = new Book();
+        $model->scenario='get';
+        $model->load($get, '');
+
+        
+        if ($model->validate()) {
+            $model->page -= 1;
+    
+            $query = new Query;
+            $query = $query->select('*')
+                ->from('file')
+                ->leftJoin('user', 'file.user_id = user.id')
+                ->rightJoin('book', 'file.id = book.file_id')
+                ->where(['role_id' => 2]);
+    
+            $provider = new ActiveDataProvider([
+                'query' => $query,
+                'pagination' => [
+                    'pageSize' => $model->count,
+                    'page' => $model->page,
+                ],
+                // 'sort' => ['defaultOrder' => ['id' => SORT_DESC]],
+            ]);
+            $result = [];
+            $models = $provider->getModels();
+            foreach ($models as $model) {
+                $result[] = [
+                    'id' => $model['id'],
+                    'title' => $model['title'],
+                    'autor' => $model['autor'],
+                    'description' => $model['description'],
+                    'file_url' => $model['file_url'],
+                ];
+            }
+            return $this->asJson([
+                'data' => [
+                    'books' => [
+                        $result,
+                    ],
+                    'code' => 200,
+                    'message' => "Список книг получен",
+                    'total_books' => $provider->totalCount,
+                ],
+            ]);
+        } else {
+            return $model->getErrors();
+        }
     }
 }

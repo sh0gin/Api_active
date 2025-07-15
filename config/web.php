@@ -85,8 +85,11 @@ $config = [
                 "OPTION api/login" => 'user/option',
                 "POST api/books/upload" => 'book/uploadsbook',
                 "OPTION api/books/upload" => 'book/option',
-                "GET api/books" => 'book/get-books',
+                // "GET api/books" => 'book/get-books',
+                // "OPTION api/books" => 'book/option',
+                "GET api/books" => 'book/get-books-pagination',
                 "OPTION api/books" => 'book/option',
+
             ],
         ]
     ],

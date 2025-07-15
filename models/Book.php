@@ -12,11 +12,15 @@ use Yii;
  * @property string $autor
  * @property string $description
  * @property int $file_id
+ * @property int $count
+ * @property int $page
  * @property int $is_public
  * @property int $user_id
  */
 class Book extends \yii\db\ActiveRecord
 {
+    public $count;
+    public $page;
     /**
      * {@inheritdoc}
      */
@@ -31,9 +35,11 @@ class Book extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['title', 'file_id'], 'required'],
-            [['description', 'autor'], 'string'],
-            [['file_id'], 'file', 'extensions' => ['html'], 'skipOnEmpty' => false, 'maxSize' => 512000]
+            [['title', 'file_id'], 'required', 'on' => 'book'],
+            [['description', 'autor'], 'string', 'on' => 'book'],
+            [['file_id'], 'file', 'extensions' => ['html'], 'skipOnEmpty' => false, 'maxSize' => 512000, 'on' => 'book'],
+            [['count', 'page'], 'required', 'on' => 'get'],
+            [['count', 'page'], 'integer', 'on' => 'get'],
         ];
     }
 
