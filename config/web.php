@@ -32,7 +32,17 @@ $config = [
                         'message' => 'not found',
                     ];
                 }
+                if ($response->statusCode == 402) {
+                    $response->data = [
+                        'message' => 'forbideen for you',
+                    ];
+                }
                 if ($response->statusCode == 401) {
+                    $response->data = [
+                        'message' => 'login failed',
+                    ];
+                }
+                if ($response->statusCode == 403) {
                     $response->data = [
                         'message' => 'forbideen for you',
                     ];
@@ -87,8 +97,16 @@ $config = [
                 "OPTION api/books/upload" => 'book/option',
                 // "GET api/books" => 'book/get-books',
                 // "OPTION api/books" => 'book/option',
-                "GET api/books" => 'book/get-books-pagination',
-                "OPTION api/books" => 'book/option',
+                // "GET api/books" => 'book/get-books-pagination',
+                // "OPTION api/books" => 'book/option',
+                // "GET api/books/" => 'book/get-info-book',
+                // "OPTION api/books/" => 'book/option',
+                // "GET api/books/" => 'book/get-books-from-user',
+                // "OPTION api/books/" => 'book/option',
+                // "GET api/books/" => 'book/get-info-book-from-user',
+                // "OPTION api/books/" => 'book/option',
+                "DELETE api/books/" => 'book/delete-book',
+                "OPTION api/books/" => 'book/option',
 
             ],
         ]

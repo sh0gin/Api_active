@@ -42,7 +42,7 @@ class BookController extends \yii\rest\ActiveController
         ];
         $auth = [
             'class' => HttpBearerAuth::class,
-            'only' => ['logout', 'uploadsbook']
+            'only' => ['logout', 'uploadsbook', 'get-books-from-user', 'get-info-book-from-user', 'delete-book']
         ];
         // re-add authentication filter
         $behaviors['authenticator'] = $auth;
@@ -75,15 +75,15 @@ class BookController extends \yii\rest\ActiveController
         $model->scenario = 'book';
         $model->load(Yii::$app->request->post(), "");
         $model->file_id = UploadedFile::getInstancesByName('file_id');
-        
+
         if ($model->validate()) {
             if (Yii::$app->user->id) {
-                $model_book = new File();
-                $model_book->user_id = Yii::$app->user->id;
-                $model_book->file_url = $model->upload($model->file_id);
+                $model_file = new File();
+                $model_file->user_id = Yii::$app->user->id;
+                $model_file->file_url = $model->upload($model->file_id);
 
-                $model_book->save(false);
-                $model->file_id = $model_book->id;
+                $model_file->save(false);
+                $model->file_id = $model_file->id;
                 $model->save();
 
                 Yii::$app->response->statusCode = 201;
@@ -162,22 +162,22 @@ class BookController extends \yii\rest\ActiveController
     public function actionGetBooksPagination()
     {
         $get = Yii::$app->request->get();
-        
+
         $model = new Book();
-        $model->scenario='get';
+        $model->scenario = 'get';
         $model->load($get, '');
 
-        
+
         if ($model->validate()) {
             $model->page -= 1;
-    
+
             $query = new Query;
             $query = $query->select('*')
                 ->from('file')
                 ->leftJoin('user', 'file.user_id = user.id')
                 ->rightJoin('book', 'file.id = book.file_id')
                 ->where(['role_id' => 2]);
-    
+
             $provider = new ActiveDataProvider([
                 'query' => $query,
                 'pagination' => [
@@ -209,6 +209,126 @@ class BookController extends \yii\rest\ActiveController
             ]);
         } else {
             return $model->getErrors();
+        }
+    }
+
+    public function actionGetInfoBook()
+    {
+        $model = new Book();
+        $model = $model->findOne(['id' => Yii::$app->request->get('id')]);
+        if ($model) {
+            $model_file = new File();
+            $model_file = $model_file->findOne(['id' => $model->file_id]);
+
+            $model_user = new User();
+            $model_user = $model_user->findOne(['id' => $model_file->user_id]);
+
+            if ($model_user->role_id == 2) {
+                Yii::$app->response->statusCode = 200;
+
+                return $this->asJson([
+                    'data' => [
+                        'id' => $model->id,
+                        'title' => $model->title,
+                        'author' => $model->autor,
+                        'descriprion' => $model->description,
+                        'file_url' => $model_file->file_url,
+                    ],
+                    'code' => 200,
+                    'message' => "Информация о книге получена",
+                ]);
+            } else {
+                Yii::$app->response->statusCode = 403;
+            }
+        } else {
+            Yii::$app->response->statusCode = 404;
+        }
+    }
+
+    public function actionGetBooksFromUser()
+    {
+        $id = Yii::$app->user->id;
+        $model_file = new File();
+        $model_file = $model_file->findAll(['user_id' => $id]);
+        $id_file = [];
+        foreach ($model_file as $model) {
+            $id_file[] = $model->id;
+        }
+
+        $model_book = new Book();
+        $model_book = $model_book->find()->where(['file_id' => $id_file])->all();
+        $result = [];
+
+        foreach ($model_book as $model) {
+            $result[] = [
+                'id' => $model->id,
+                'title' => $model->title,
+                'author' => $model->autor,
+                'description' => $model->description,
+                'file_url' => File::findOne(['id' => $model->file_id])->file_url,
+            ];
+        }
+
+        return $this->asJson([
+            'data' => [
+                'books' => [
+                    $result,
+                ]
+            ],
+            'code' => 200,
+            'message' => 'Список книг получен'
+        ]);
+    }
+
+    public function actionGetInfoBookFromUser()
+    {
+        $id_book = Yii::$app->request->get()['id'];
+        $id = Yii::$app->user->id;
+        if ($id) {
+
+            $model_book = Book::findOne($id_book);
+            $model_file = File::findOne($model_book->file_id);
+
+            if ($id) {
+                return $this->asJson([
+                    'data' => [
+                        'book' => [
+                            'id' => $model_book->id,
+                            'title' => $model_book->title,
+                            'autor' => $model_book->autor,
+                            'description' => $model_book->description,
+                            'file_url' => $model_file->file_url,
+                        ]
+                    ]
+                ]);
+            } else {
+                Yii::$app->response->statusCode = 404;
+            }
+        } else {
+            Yii::$app->response->statusCode = 403;
+        }
+    }
+
+    public function actionDeleteBook()
+    {
+        if (Yii::$app->user->id) {
+            $model_book = Book::findOne(Yii::$app->request->get()['id']);
+            $model_file = File::findOne($model_book->file_id);
+            $model_user = User::findOne(Yii::$app->user->id);
+            if ($model_book) {
+                if ($model_file->user_id == $model_user->id) {
+                    $model_book->delete();
+                    $model_file->delete();
+                    Yii::$app->response->statusCode = 200;
+                } else {
+                    Yii::$app->response->statusCode = 403;
+                }
+            }
+        } else {
+            Yii::$app->response->statusCode = 403;
+            return $this->asJson([
+                "message" => "Login failed"
+            ]);
         }
     }
 }
