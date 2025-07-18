@@ -36,6 +36,8 @@ class Parametr extends \yii\db\ActiveRecord
             [['font_family', 'font_size', 'text_color', 'background_color'], 'required'],
             [['font_size'], 'integer'],
             [['font_family'], 'string', 'max' => 255],
+            ['background_color', 'match', 'pattern' => '/#[A-Z0-9]{6}$/'],
+            ['text_color', 'match', 'pattern' => '/#[A-Z0-9]{6}$/'],
             [['text_color', 'background_color'], 'string', 'max' => 7],
         ];
     }

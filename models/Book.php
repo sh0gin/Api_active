@@ -40,6 +40,7 @@ class Book extends \yii\db\ActiveRecord
             [['file_id'], 'file', 'extensions' => ['html'], 'skipOnEmpty' => false, 'maxSize' => 512000, 'on' => 'book'],
             [['count', 'page'], 'required', 'on' => 'get'],
             [['count', 'page'], 'integer', 'on' => 'get'],
+            ['is_public', 'boolean', 'on' => 'admin', 'message' => 'Must have value FALSE or TRUE'],
         ];
     }
 

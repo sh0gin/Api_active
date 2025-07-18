@@ -44,7 +44,7 @@ $config = [
                 }
                 if ($response->statusCode == 403) {
                     $response->data = [
-                        'message' => 'forbideen for you',
+                        'message' => 'login failed',
                     ];
                 }
             },
@@ -63,6 +63,7 @@ $config = [
         'user' => [
             'identityClass' => 'app\models\User',
             'enableAutoLogin' => true,
+            'enableSession' => false,
         ],
         'errorHandler' => [
             'errorAction' => 'site/error',
@@ -89,24 +90,67 @@ $config = [
             'showScriptName' => false,
             'rules' => [
                 ['class' => 'yii\rest\UrlRule', 'controller' => 'user'],
+
+
+                // 'rules' => [
+                //                 [
+                //                     'class' => 'yii\rest\UrlRule', 'controller' => 'user',
+                //                     'controller' => 'post',
+                //                     'prefix' => 'api',
+                //                     'pluraralize' => true,
+                //                     'extraPatterns' => [
+                //                         'POST registration' => 'register',
+                //                         'POST registration' => 'register',
+                //                     ]
+                //                 ], были попытки :)
+
                 "POST api/registration" => 'user/register',
-                "OPTION api/registration" => 'user/option',
+                "OPTIONS api/registration" => 'user/options',
+
+                "POST api/logout" => 'user/logout',
+                "OPTIONS api/logout" => 'user/options',
+
                 "POST api/login" => 'user/login',
-                "OPTION api/login" => 'user/option',
+                "OPTIONS api/login" => 'user/options',
+
                 "POST api/books/upload" => 'book/uploadsbook',
-                "OPTION api/books/upload" => 'book/option',
-                // "GET api/books" => 'book/get-books',
+                "OPTIONS api/books/upload" => 'book/options',
+
+                "GET api/books" => 'book/get-books',
+                "OPTIONS api/books" => 'book/options',
+                
+                // "GET api/books" => 'book/get-books-pagination', no need anymore
                 // "OPTION api/books" => 'book/option',
-                // "GET api/books" => 'book/get-books-pagination',
-                // "OPTION api/books" => 'book/option',
-                // "GET api/books/" => 'book/get-info-book',
-                // "OPTION api/books/" => 'book/option',
-                // "GET api/books/" => 'book/get-books-from-user',
+
+                "GET api/books/progress" => 'book/get-books-progress',
+                "OPTIONS api/books/progress" => 'book/options',
+
+                "GET api/books/<id>" => 'book/get-info-book',
+                "OPTIONS api/books/<id>" => 'book/options',
+
+                // "GET api/books/<id>" => 'book/get-books-from-user',
                 // "OPTION api/books/" => 'book/option',
                 // "GET api/books/" => 'book/get-info-book-from-user',
                 // "OPTION api/books/" => 'book/option',
-                "DELETE api/books/" => 'book/delete-book',
-                "OPTION api/books/" => 'book/option',
+
+                "DELETE api/books/<id>" => 'book/delete-book',
+                "OPTIONS api/books/<id>" => 'book/options',
+
+                "PATCH api/books/<id>" => 'book/edit-book',
+                "OPTIONS api/books/<id>" => 'book/options',
+
+                "POST api/books/<id>/progress" => 'book/save-progress',
+                "OPTIONS api/books/<id>/progress" => 'book/options',
+
+                "GET api/books/<id>/progress" => 'book/get-progress',
+                "OPTIONS api/books/<id>/progress" => 'book/options',
+
+                "POST api/user/settings" => 'book/set-settings',
+                "OPTIONS api/user/settings" => 'book/options',
+
+                "PUT api/books/<id>/change-visibility" => 'book/change-visibility',
+                "OPTIONS api/books/<id>/change-visibility" => 'book/options'
+
 
             ],
         ]

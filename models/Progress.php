@@ -35,6 +35,8 @@ class Progress extends \yii\db\ActiveRecord
         return [
             [['book_id', 'user_id', 'progress'], 'required'],
             [['book_id', 'user_id'], 'integer'],
+            [['progress'], 'compare', 'compareValue' => 0, 'operator' => '>=', 'type' => 'number'],
+            [['progress'], 'compare', 'compareValue' => 100, 'operator' => '<=', 'type' => 'number'],
             [['progress'], 'number'],
             [['book_id'], 'exist', 'skipOnError' => true, 'targetClass' => Book::class, 'targetAttribute' => ['book_id' => 'id']],
             [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::class, 'targetAttribute' => ['user_id' => 'id']],

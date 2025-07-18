@@ -37,7 +37,7 @@ class UserController extends \yii\rest\ActiveController
                 'Access-Control-Request-Headers' => ['*'],
             ],
             'actions' => [
-                'login' => [
+                'logout' => [
                     'Access-Control-Allow-Credentials' => true,
                 ]
             ]
@@ -101,7 +101,6 @@ class UserController extends \yii\rest\ActiveController
         } else {
             Yii::$app->response->statusCode = 422;
             $valid = $model->getErrors();
-
             return $this->asJson([
                 'errors' => [
                     'code' => 422,
@@ -124,7 +123,7 @@ class UserController extends \yii\rest\ActiveController
             $user = User::findOne(['email' => $model->email]);
             if ($user && $user->validatePassword($model->password)) {
                 $user->token = Yii::$app->security->generateRandomString();
-                $user->role_id = Role::getRoleId('user');
+                // $user->role_id = Role::getRoleId('user');
                 $user->save(false);
                 return $this->asJson([
                     'data' => [
@@ -159,5 +158,11 @@ class UserController extends \yii\rest\ActiveController
                 ],
             ]);
         }
+    }
+
+    public function actionLogout() {
+        $user = User::findOne(Yii::$app->user->id);
+        $user->token = NULL;
+        $user->save();
     }
 }
