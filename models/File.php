@@ -8,8 +8,8 @@ use Yii;
  * This is the model class for table "File".
  *
  * @property int $id
+ * @property int $book_id
  * @property string $file_url
- * @property string $user_id
  * @property string $data_uploads
  *
  * @property Book[] $books
@@ -32,9 +32,12 @@ class File extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['file_url', 'user_id'], 'required'],
-            [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => Book::class, 'targetAttribute' => ['book_id' => 'id']],
-            [['file_url'], 'string', 'max' => 255],
+            [['file_url'], 'required'],
+            [['book_id'], 'required', 'on' => 'basic'],
+            [['file_url'], 'file', 'extensions' => ['html'], 'skipOnEmpty' => false, 'maxSize' => 1024 * 512, 'on' => 'book'],
+
+            // [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => Book::class, 'targetAttribute' => ['book_id' => 'id']],
+            [['file_url'], 'string', 'max' => 255, 'on' => 'basic'],
         ];
     }
 
@@ -60,4 +63,10 @@ class File extends \yii\db\ActiveRecord
         return $this->hasMany(Book::class, ['file_url' => 'id']);
     }
 
+    public function upload($file)
+    {
+        $path = Yii::$app->security->generateRandomstring() . ".{$file[0]->extension}";
+        $file[0]->saveAs(__DIR__ . '/uploads/' . $path);
+        return $path;
+    }
 }

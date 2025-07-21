@@ -11,7 +11,6 @@ use Yii;
  * @property string $title
  * @property string $autor
  * @property string $description
- * @property int $file_id
  * @property int $count
  * @property int $page
  * @property int $is_public
@@ -35,9 +34,9 @@ class Book extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['title', 'file_id'], 'required', 'on' => 'book'],
+            [['title'], 'required', 'on' => 'book'],
             [['description', 'autor'], 'string', 'on' => 'book'],
-            [['file_id'], 'file', 'extensions' => ['html'], 'skipOnEmpty' => false, 'maxSize' => 512000, 'on' => 'book'],
+            // [['file'], 'file', 'extensions' => ['html'], 'skipOnEmpty' => false, 'maxSize' => 1024*512, 'on' => 'book'],
             [['count', 'page'], 'required', 'on' => 'get'],
             [['count', 'page'], 'integer', 'on' => 'get'],
             ['is_public', 'boolean', 'on' => 'admin', 'message' => 'Must have value FALSE or TRUE'],
@@ -54,16 +53,11 @@ class Book extends \yii\db\ActiveRecord
             'title' => 'Title',
             'autor' => 'Autor',
             'description' => 'Description',
-            'file_id' => 'File ID',
             'is_public' => 'Is Public',
             'user_id' => 'User ID',
         ];
     }
 
-    public function upload($file) {
-        $path = Yii::$app->security->generateRandomstring() . ".{$file[0]->extension}";
-        $file[0]->saveAs(__DIR__ . '/uploads/' . $path);
-        return $path;
-    }
+
 
 }

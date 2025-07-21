@@ -44,7 +44,7 @@ class User extends \yii\db\ActiveRecord implements IdentityInterface
             [['name', 'email', 'age', 'password'], 'required', 'on' => 'reg'],
             [['password', 'email'], 'required' ,'on' => 'auth'],
 
-            [['gender'], 'integer', 'on' => 'reg'],
+            [['gender'], 'boolean', 'trueValue' => 1, 'falseValue' => 2, 'on' => 'reg'],
             [['age'], 'integer', 'on' => 'reg'],
 
             [['age'], 'compare', 'compareValue' => 2, 'operator' => '>=', 'type' => 'number', 'on' => 'reg'],

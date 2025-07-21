@@ -77,10 +77,6 @@ class UserController extends \yii\rest\ActiveController
             $model->password = Yii::$app->security->generatePasswordHash($model->password);
             $model->role_id = Role::getRoleId('User');
 
-            if (array_key_exists('gender', Yii::$app->request->post())) {
-
-                $model->gender = Gender::getGender(Yii::$app->request->post()['gender']);
-            }
 
             $model->save(false);
 
@@ -100,13 +96,12 @@ class UserController extends \yii\rest\ActiveController
             ]);
         } else {
             Yii::$app->response->statusCode = 422;
-            $valid = $model->getErrors();
             return $this->asJson([
                 'errors' => [
                     'code' => 422,
                     'message' => "Validation error",
                     'errors' => [
-                        $valid,
+                        $model->getErrors(),
                     ]
                 ],
             ]);
@@ -132,7 +127,7 @@ class UserController extends \yii\rest\ActiveController
                             'id' => $user->id,
                             'name' => $user->name,
                             'email' => $user->email,
-                            'role' => $user->role_id,
+                            'role' => Role::getRoleName($user->role_id),
                         ]
                     ],
                     'code' => 200,
@@ -146,14 +141,13 @@ class UserController extends \yii\rest\ActiveController
             }
         } else {
             Yii::$app->response->statusCode = 422;
-            $valid = $model->getErrors();
 
             return $this->asJson([
                 'errors' => [
                     'code' => 422,
                     'message' => "Validation error",
                     'errors' => [
-                        $valid,
+                        $model->getErrors(),
                     ]
                 ],
             ]);

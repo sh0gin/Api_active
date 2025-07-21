@@ -43,15 +43,4 @@ class Gender extends \yii\db\ActiveRecord
             'role' => 'Role',
         ];
     }
-
-    public static function getGender($gen)
-    {   
-        if ($gen == 1) {
-            return 1;
-        } else if ($gen == 2) {
-            return 2;
-        } else {
-            return NULL;
-        }
-    }
 }

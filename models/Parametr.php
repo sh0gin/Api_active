@@ -10,8 +10,10 @@ use Yii;
  * @property int $id
  * @property string $font_family
  * @property int $font_size
+ * @property int $user_id
  * @property string $text_color
  * @property string $background_color
+ * 
  *
  * @property User[] $users
  */
@@ -33,12 +35,15 @@ class Parametr extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['font_family', 'font_size', 'text_color', 'background_color'], 'required'],
-            [['font_size'], 'integer'],
+            [['font_family', 'font_size', 'text_color', 'background_color', 'user_id'], 'required'],
+            [['font_size', 'user_id'], 'integer'],
             [['font_family'], 'string', 'max' => 255],
             ['background_color', 'match', 'pattern' => '/#[A-Z0-9]{6}$/'],
             ['text_color', 'match', 'pattern' => '/#[A-Z0-9]{6}$/'],
+            [['user_id'], 'exist', 'skipOnError' => true],
+
             [['text_color', 'background_color'], 'string', 'max' => 7],
+
         ];
     }
 
@@ -65,5 +70,4 @@ class Parametr extends \yii\db\ActiveRecord
     {
         return $this->hasMany(User::class, ['parametr_id' => 'id']);
     }
-
 }
