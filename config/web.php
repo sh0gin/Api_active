@@ -32,17 +32,12 @@ $config = [
                         'message' => 'not found',
                     ];
                 }
-                if ($response->statusCode == 402) {
+                if ($response->statusCode == 403) {
                     $response->data = [
                         'message' => 'forbideen for you',
                     ];
                 }
                 if ($response->statusCode == 401) {
-                    $response->data = [
-                        'message' => 'login failed',
-                    ];
-                }
-                if ($response->statusCode == 403) {
                     $response->data = [
                         'message' => 'login failed',
                     ];

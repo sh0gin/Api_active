@@ -87,7 +87,6 @@ class BookController extends \yii\rest\ActiveController
         // }
 
         if ($model->validate()) {
-            if (Yii::$app->user->id) {
                 $model_file = new File();
                 $model_file->file_url = UploadedFile::getInstancesByName('file');
                 $model_file->scenario = 'book';
@@ -125,12 +124,6 @@ class BookController extends \yii\rest\ActiveController
                     'code' => 201,
                     'message' => "Книга успешно загружена",
                 ]);
-            } else {
-                Yii::$app->response->statusCode = 403;
-                return $this->asJson([
-                    'massage' => 'Login failed',
-                ]);
-            }
         } else {
             Yii::$app->response->statusCode = 422;
             return $this->asJson([
@@ -376,7 +369,7 @@ class BookController extends \yii\rest\ActiveController
                     'message' => "Информация о книге получена",
                 ]);
             } else {
-                Yii::$app->response->statusCode = 402;
+                Yii::$app->response->statusCode = 403;
             }
         } else {
             Yii::$app->response->statusCode = 404;
@@ -420,7 +413,7 @@ class BookController extends \yii\rest\ActiveController
                 $model_file->delete();
                 Yii::$app->response->statusCode = 200;
             } else {
-                Yii::$app->response->statusCode = 402;
+                Yii::$app->response->statusCode = 403;
             }
         }
     }
@@ -454,7 +447,7 @@ class BookController extends \yii\rest\ActiveController
                     ]
                 ]);
             } else {
-                Yii::$app->response->statusCode = 402;
+                Yii::$app->response->statusCode = 403;
             }
         } else {
             Yii::$app->response->statusCode = 404;
@@ -517,7 +510,7 @@ class BookController extends \yii\rest\ActiveController
                     ]);
                 }
             } else {
-                Yii::$app->response->statusCode = 402;
+                Yii::$app->response->statusCode = 403;
             }
         } else {
             Yii::$app->response->statusCode = 404;
@@ -542,7 +535,7 @@ class BookController extends \yii\rest\ActiveController
                     ]
                 ]);
             } else {
-                Yii::$app->response->statusCode = 402;
+                Yii::$app->response->statusCode = 403;
             }
         } else {
             Yii::$app->response->statusCode = 404;
@@ -676,7 +669,7 @@ class BookController extends \yii\rest\ActiveController
                 }
             }
         } else {
-            Yii::$app->response->statusCode = 402;
+            Yii::$app->response->statusCode = 403;
         }
 
 
