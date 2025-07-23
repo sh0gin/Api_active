@@ -11,6 +11,7 @@ use Yii;
  * @property int $book_id
  * @property string $file_url
  * @property string $data_uploads
+ * @property string $file
  *
  * @property Book[] $books
  */
@@ -34,10 +35,7 @@ class File extends \yii\db\ActiveRecord
         return [
             [['file_url'], 'required'],
             [['book_id'], 'required', 'on' => 'basic'],
-            [['file_url'], 'file', 'extensions' => ['html'], 'skipOnEmpty' => false, 'maxSize' => 1024 * 512, 'on' => 'book'],
-
-            // [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => Book::class, 'targetAttribute' => ['book_id' => 'id']],
-            [['file_url'], 'string', 'max' => 255, 'on' => 'basic'],
+            [['file_url'], 'string', 'max' => 255],
         ];
     }
 

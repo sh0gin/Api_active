@@ -11,6 +11,7 @@ use Yii;
  * @property string $title
  * @property string $autor
  * @property string $description
+ * @property string $file
  * @property int $count
  * @property int $page
  * @property int $is_public
@@ -18,8 +19,11 @@ use Yii;
  */
 class Book extends \yii\db\ActiveRecord
 {
+    public $checkExtensionByMimeType = false;
+
     public $count;
     public $page;
+    public $file;
     /**
      * {@inheritdoc}
      */
@@ -40,6 +44,8 @@ class Book extends \yii\db\ActiveRecord
             [['count', 'page'], 'required', 'on' => 'get'],
             [['count', 'page'], 'integer', 'on' => 'get'],
             ['is_public', 'boolean', 'on' => 'admin', 'message' => 'Must have value FALSE or TRUE'],
+            [['file'], 'file', 'extensions' => ['html'], 'skipOnEmpty' => false, 'maxSize' => 1024 * 512],
+
         ];
     }
 
@@ -57,7 +63,4 @@ class Book extends \yii\db\ActiveRecord
             'user_id' => 'User ID',
         ];
     }
-
-
-
 }

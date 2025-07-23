@@ -80,50 +80,53 @@ class BookController extends \yii\rest\ActiveController
         $model->scenario = 'book';
         $model->load(Yii::$app->request->post(), "");
         $model->user_id = Yii::$app->user->id;
+        $model->file = UploadedFile::getInstancesByName('file');
+
         // $model->file = UploadedFile::getInstancesByName('file');
         // $role_id = User::findOne(Yii::$app->user->id)->role_id; access public for everyone for once after created
         // if ($role_id == 2) {
         //     $model->is_public = 1;
         // }
 
-        if ($model->validate()) {
-                $model_file = new File();
-                $model_file->file_url = UploadedFile::getInstancesByName('file');
-                $model_file->scenario = 'book';
-                if ($model_file->validate()) {
-                    $model_file->file_url = $model_file->upload($model_file->file_url);
-                    $model_file->scenario = 'basic';
-                } else {
-                    return $this->asJson([
-                        'errors' => [
-                            'code' => 422,
-                            'message' => "Validation error",
-                            'errors' => [
-                                $model_file->getErrors(),
-                            ]
-                        ],
-                    ]);
-                }
+        if ($model->save()) {
 
+            $model_file = new File();
+            $model_file->file_url = $model_file->upload($model->file);
+            $model_file->book_id = $model->id;
 
-                $model->save();
-                $model_file->book_id = $model->id;
-                $model_file->save(false);
-
-                Yii::$app->response->statusCode = 201;
+            if (!$model_file->save(false)) {
                 return $this->asJson([
-                    'data' => [
-                        'book' => [
-                            'id' => $model->id,
-                            'title' => $model->title,
-                            'author' => $model->autor,
-                            'description' => $model->description,
-                            'file_url' => $_SERVER['HTTP_HOST'] . '/models/uploads/' . $model_file->file_url,
+                    'errors' => [
+                        'code' => 422,
+                        'message' => "Validation error",
+                        'errors' => [
+                            $model_file->getErrors(),
                         ]
                     ],
-                    'code' => 201,
-                    'message' => "Книга успешно загружена",
                 ]);
+            };
+
+            Yii::$app->response->statusCode = 201;
+            return $this->asJson([
+                'data' => [
+                    'book' => [
+                        'id' => $model->id,
+                        'title' => $model->title,
+                        'author' => $model->autor,
+                        'description' => $model->description,
+                        'file_url' => File::find()
+                            ->select([
+                                "CONCAT('"
+                                    . Yii::$app->request->getHostInfo()
+                                    . "/models/uploads/', file_url) as file_url"
+                            ])
+                            ->where(['book_id' => $model->id])
+                            ->one()
+                    ]
+                ],
+                'code' => 201,
+                'message' => "Книга успешно загружена",
+            ]);
         } else {
             Yii::$app->response->statusCode = 422;
             return $this->asJson([
@@ -152,7 +155,7 @@ class BookController extends \yii\rest\ActiveController
         //     ->leftJoin('user', 'file.user_id = user.id')
         //     ->rightJoin('book', 'file.id = book.file');
 
-        $query1 = $query->select('book.id, user.role_id, title, autor, description, file_url, is_public')
+        $query1 = $query->select('book.*, user.role_id')
             ->from('book')
             ->leftJoin('file', 'book.id = file.book_id')
             ->leftJoin('user', 'book.user_id = user.id');
@@ -201,9 +204,6 @@ class BookController extends \yii\rest\ActiveController
         } else {
             $query = $query->createCommand()->queryAll();
         }
-
-        Yii::$app->response->statusCode = 200;
-
         // var_dump($query); die;
         if ($admin) {
             foreach ($query as $model) {
@@ -212,7 +212,14 @@ class BookController extends \yii\rest\ActiveController
                     'title' => $model['title'],
                     'autor' => $model['autor'],
                     'description' => $model['description'],
-                    'file_url' => $_SERVER['HTTP_HOST'] . '/models/uploads' . $model['file_url'],
+                    'file_url' => File::find()
+                        ->select([
+                            "CONCAT('"
+                                . Yii::$app->request->getHostInfo()
+                                . "/models/uploads/', file_url) as file_url"
+                        ])
+                        ->where(['book_id' => $model->id])
+                        ->one(),
                     'is_public' => $model['is_public'],
                 ];
             }
@@ -223,7 +230,14 @@ class BookController extends \yii\rest\ActiveController
                     'title' => $model['title'],
                     'autor' => $model['autor'],
                     'description' => $model['description'],
-                    'file_url' => $_SERVER['HTTP_HOST'] . '/models/uploads' . $model['file_url'],
+                    'file_url' => File::find()
+                        ->select([
+                            "CONCAT('"
+                                . Yii::$app->request->getHostInfo()
+                                . "/models/uploads/', file_url) as file_url"
+                        ])
+                        ->where(['book_id' => $model->id])
+                        ->one(),
                 ];
             }
         }
@@ -355,7 +369,6 @@ class BookController extends \yii\rest\ActiveController
             $model_user = $model_user->findOne(['id' => $model->user_id]);
 
             if (($model_user->role_id == 2 && $model->is_public == 1) || (Yii::$app->user->id == $model_user->id)) {
-                Yii::$app->response->statusCode = 200;
 
                 return $this->asJson([
                     'data' => [
@@ -363,7 +376,14 @@ class BookController extends \yii\rest\ActiveController
                         'title' => $model->title,
                         'author' => $model->autor,
                         'descriprion' => $model->description,
-                        'file_url' => $_SERVER['HTTP_HOST'] . '/models/uploads' . $model_file->file_url,
+                        'file_url' => File::find()
+                            ->select([
+                                "CONCAT('"
+                                    . Yii::$app->request->getHostInfo()
+                                    . "/models/uploads/', file_url) as file_url"
+                            ])
+                            ->where(['book_id' => $id])
+                            ->one(),
                     ],
                     'code' => 200,
                     'message' => "Информация о книге получена",
@@ -411,7 +431,6 @@ class BookController extends \yii\rest\ActiveController
             if ($model_book->user_id == $model_user->id) {
                 $model_book->delete();
                 $model_file->delete();
-                Yii::$app->response->statusCode = 200;
             } else {
                 Yii::$app->response->statusCode = 403;
             }
@@ -420,19 +439,15 @@ class BookController extends \yii\rest\ActiveController
 
     public function actionEditBook($id)
     {
-
         $book = Book::findOne($id);
         if ($book) {
-            $file = File::findOne(['book_id' => $id]);
             $user = User::findOne($book->user_id);
-            $post = Yii::$app->request->post();
             if ($user->id == Yii::$app->user->id) {
 
-                $book->title = $post['title'];
-                $book->autor = $post['author'];
-                $book->description = $post['description'];
+                // $book->load(Yii::$app->request->post(), '');
+                $book->load(['title' => 123], '');
+                var_dump($book->getAttributes());
                 $book->save();
-                Yii::$app->response->statusCode = 200;
                 return $this->asJson([
                     'data' => [
                         'book' => [
@@ -440,7 +455,14 @@ class BookController extends \yii\rest\ActiveController
                             'title' => $book->title,
                             'author' => $book->autor,
                             'description' => $book->description,
-                            'file_url' => $_SERVER['HTTP_HOST'] . '/models/uploads' .  $file->file_url,
+                            'file_url' => File::find()
+                                ->select([
+                                    "CONCAT('"
+                                        . Yii::$app->request->getHostInfo()
+                                        . "/models/uploads/', file_url) as file_url"
+                                ])
+                                ->where(['book_id' => $id])
+                                ->one(),
                         ],
                         'code' => 200,
                         'message' => "Информация о книге обновлена"
@@ -456,9 +478,9 @@ class BookController extends \yii\rest\ActiveController
 
     public function actionSaveProgress($id)
     {
+
         $id_active_user = Yii::$app->user->id;
         $book = Book::findOne($id);
-        
         if ($book) {
 
             // $file = File::findOne(['book_id' => $id]);
@@ -468,15 +490,14 @@ class BookController extends \yii\rest\ActiveController
                 $progress = new Progress();
                 $book_progress = Progress::findOne(['user_id' => $id_active_user, 'book_id' => $id]);
 
-                if ($book) {
+                if ($book_progress) {
                     $progress = $book_progress;
-                    $progress->progress = Yii::$app->request->post()['progress'];
+                    $progress->progress = (int) Yii::$app->request->post()['progress'];
                 } else {
                     $progress->load(['book_id' => $id, 'user_id' => $id_active_user, 'progress' => Yii::$app->request->post()['progress']], '');
                 }
                 if ($progress->validate()) {
                     if ($progress->save()) {
-                        Yii::$app->response->statusCode = 200;
 
                         return $this->asJson([
                             'data' => [
@@ -500,6 +521,8 @@ class BookController extends \yii\rest\ActiveController
                         ]);
                     };
                 } else {
+                    Yii::$app->response->statusCode = 422;
+
                     return $this->asJson([
                         'errors' => [
                             'code' => 422,
@@ -522,10 +545,9 @@ class BookController extends \yii\rest\ActiveController
         $book = Book::findOne($id);
         // var_dump($id, Yii::$app->user->id); die;
         if ($book) {
-            if ($book->user_id == Yii::$app->user->id) {
+            if ($book->user_id == Yii::$app->user->id || $book->is_public) {
                 $progress = Progress::findOne(['book_id' => $id, 'user_id' => Yii::$app->user->id]);
 
-                Yii::$app->response->statusCode = 200;
                 return $this->asJson([
                     'data' => [
                         'book_id' => $book->id,
@@ -585,7 +607,6 @@ class BookController extends \yii\rest\ActiveController
                 // $user = User::findOne(Yii::$app->user->id);
                 // $user->parametr_id = $model->id;
                 // $user->save();
-                Yii::$app->response->statusCode = 200;
                 return $this->asJson([
                     'data' => [
                         'settings' => [
