@@ -40,11 +40,15 @@ class Book extends \yii\db\ActiveRecord
         return [
             [['title'], 'required', 'on' => 'book'],
             [['description', 'autor'], 'string', 'on' => 'book'],
+            
+            [['title'], 'required', 'on' => 'edit'],
+            [['description', 'autor'], 'string', 'on' => 'edit'],
+
             // [['file'], 'file', 'extensions' => ['html'], 'skipOnEmpty' => false, 'maxSize' => 1024*512, 'on' => 'book'],
             [['count', 'page'], 'required', 'on' => 'get'],
             [['count', 'page'], 'integer', 'on' => 'get'],
             ['is_public', 'boolean', 'on' => 'admin', 'message' => 'Must have value FALSE or TRUE'],
-            [['file'], 'file', 'extensions' => ['html'], 'skipOnEmpty' => false, 'maxSize' => 1024 * 512],
+            [['file'], 'file', 'extensions' => ['html'], 'skipOnEmpty' => false, 'maxSize' => 1024 * 512, 'on' => 'book'],
 
         ];
     }

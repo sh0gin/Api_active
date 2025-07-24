@@ -218,7 +218,7 @@ class BookController extends \yii\rest\ActiveController
                                 . Yii::$app->request->getHostInfo()
                                 . "/models/uploads/', file_url) as file_url"
                         ])
-                        ->where(['book_id' => $model->id])
+                        ->where(['book_id' => $model['id']])
                         ->one(),
                     'is_public' => $model['is_public'],
                 ];
@@ -236,7 +236,7 @@ class BookController extends \yii\rest\ActiveController
                                 . Yii::$app->request->getHostInfo()
                                 . "/models/uploads/', file_url) as file_url"
                         ])
-                        ->where(['book_id' => $model->id])
+                        ->where(['book_id' => $model['id']])
                         ->one(),
                 ];
             }
@@ -434,6 +434,8 @@ class BookController extends \yii\rest\ActiveController
             } else {
                 Yii::$app->response->statusCode = 403;
             }
+        } else {
+            Yii::$app->response->statusCode = 404;
         }
     }
 
@@ -441,33 +443,44 @@ class BookController extends \yii\rest\ActiveController
     {
         $book = Book::findOne($id);
         if ($book) {
+            $book->scenario = 'edit';
             $user = User::findOne($book->user_id);
             if ($user->id == Yii::$app->user->id) {
 
-                // $book->load(Yii::$app->request->post(), '');
-                $book->load(['title' => 123], '');
-                var_dump($book->getAttributes());
-                $book->save();
-                return $this->asJson([
-                    'data' => [
-                        'book' => [
-                            'id' => $book->id,
-                            'title' => $book->title,
-                            'author' => $book->autor,
-                            'description' => $book->description,
-                            'file_url' => File::find()
-                                ->select([
-                                    "CONCAT('"
-                                        . Yii::$app->request->getHostInfo()
-                                        . "/models/uploads/', file_url) as file_url"
-                                ])
-                                ->where(['book_id' => $id])
-                                ->one(),
+                $book->load(Yii::$app->request->post(), '');
+
+                if ($book->save()) {
+                    return $this->asJson([
+                        'data' => [
+                            'book' => [
+                                'id' => $book->id,
+                                'title' => $book->title,
+                                'author' => $book->autor,
+                                'description' => $book->description,
+                                'file_url' => File::find()
+                                    ->select([
+                                        "CONCAT('"
+                                            . Yii::$app->request->getHostInfo()
+                                            . "/models/uploads/', file_url) as file_url"
+                                    ])
+                                    ->where(['book_id' => $id])
+                                    ->one(),
+                            ],
+                            'code' => 200,
+                            'message' => "Информация о книге обновлена"
+                        ]
+                    ]);
+                } else {
+                    return $this->asJson([
+                        'errors' => [
+                            'code' => 422,
+                            'message' => "Validation error",
+                            'errors' => [
+                                $book->getErrors(),
+                            ]
                         ],
-                        'code' => 200,
-                        'message' => "Информация о книге обновлена"
-                    ]
-                ]);
+                    ]);
+                };
             } else {
                 Yii::$app->response->statusCode = 403;
             }
